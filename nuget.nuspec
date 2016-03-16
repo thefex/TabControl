@@ -1,0 +1,22 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata minClientVersion="3.2">
+        <id>TabLayout</id>
+        <version>1.0.1.9</version>
+        <authors>Przemysław Raciborski [thefex]</authors>
+        <description>TabLayout Android port for WinRT WP 8.1</description>
+        <dependencies>
+         </dependencies>
+    </metadata>
+    <files>
+        <file src="TabControl\bin\Release\*.dll" target="lib\wpa81" />
+        <file src="TabControl\bin\Release\*.pri" target="lib\wpa81\TabControl\" />
+      <file src="TabControl\bin\Release\*.pri" target="lib\wpa81\"/>
+      <file src="TabControl\bin\Release\*.xml" target="lib\wpa81\TabControl\" />
+      <file src="TabControl\bin\Release\*.xml" target="lib\wpa81\"/>
+        <file src="TabControl\bin\Release\Themes\*" target="lib\wpa81\TabControl\Themes\" />
+      <file src="TabControl\Themes\*" target="lib\wpa81\TabControl\Themes\" />
+      <file src="TabControl\Themes\*" target="lib\wpa81\TabControl\" />
+      <file src="TabControl\Themes\*" target="lib\wpa81\"/>
+    </files>
+</package>

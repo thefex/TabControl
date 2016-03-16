@@ -1,0 +1,43 @@
+﻿<Page
+    x:Class="TabControl.Sample.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TabControl.Sample"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tabControl="using:TabControl"
+    mc:Ignorable="d"
+    RequestedTheme="Light"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        
+    </Page.Resources>
+
+
+    <Grid>
+        <tabControl:TabIndicatorLayoutFlipView x:Name="TabLayoutFlipView" Margin="15 15 0 0">
+            <tabControl:TabIndicatorLayoutFlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <TextBlock Text="{Binding Content}" Style="{StaticResource BodyTextBlockStyle}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </tabControl:TabIndicatorLayoutFlipView.ItemTemplate>
+        </tabControl:TabIndicatorLayoutFlipView>
+
+        <!--<tabControl:TabLayoutFlipView x:Name="SecondaryTabLayoutFlipView"
+                                      Grid.Row="1" Margin="0 10 0 0">
+            <tabControl:TabLayoutFlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <TextBlock Text="{Binding Content}" Style="{StaticResource BodyTextBlockStyle}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </tabControl:TabLayoutFlipView.ItemTemplate>
+        </tabControl:TabLayoutFlipView>-->
+
+    
+    </Grid>
+</Page>
