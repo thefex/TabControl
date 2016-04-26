@@ -90,24 +90,29 @@ namespace TabControl
 
         private async void TabsListViewOnItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var selectedIndex = listViewItems.FindIndex(x => x.Content.Equals(itemClickEventArgs.ClickedItem));
+            var listViewSelectedIndex = listViewItems.FindIndex(x => x.Content.Equals(itemClickEventArgs.ClickedItem));
 
-            if (selectedIndex == -1)
+            if (listViewSelectedIndex == -1)
                 return;
 
-            var isPageFarAway = Math.Abs(selectedIndex - SelectedIndex) > 1;
+            await ScrollToIndex(listViewSelectedIndex);
+        }
+
+        public async Task ScrollToIndex(int indexToScrollIn)
+        {
+            var isPageFarAway = Math.Abs(indexToScrollIn - SelectedIndex) > 1;
 
             if (!isPageFarAway)
             {
-                SelectedIndex = selectedIndex;
+                SelectedIndex = indexToScrollIn;
                 return;
             }
 
-            while (SelectedIndex != selectedIndex)
+            while (SelectedIndex != indexToScrollIn)
             {
-                SelectedIndex += (SelectedIndex > selectedIndex) ? -1 : 1;
+                SelectedIndex += (SelectedIndex > indexToScrollIn) ? -1 : 1;
 
-                if (SelectedIndex != selectedIndex)
+                if (SelectedIndex != indexToScrollIn)
                     await Task.Delay(10);
             }
         }

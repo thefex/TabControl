@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata minClientVersion="3.2">
         <id>TabLayout</id>
-        <version>1.0.2.0</version>
+        <version>1.0.3</version>
         <authors>Przemysław Raciborski [thefex]</authors>
         <description>TabLayout Android port for WinRT WP 8.1</description>
         <dependencies>
