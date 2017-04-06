@@ -118,17 +118,12 @@ namespace TabControl
                 {
                     var listViewItem = tabsListView.ContainerFromIndex(i) as ListViewItem;
                     listViewItem.InvalidateMeasure();
-                    itemWidth = Math.Max(itemWidth, listViewItem.DesiredSize.Width);
                     listViewItems.Add(listViewItem);
                     listViewItem.Loaded += ListViewItemOnLoaded;
                 }
 
                 for (var i = 0; i < tabsListView.Items.Count; ++i)
-                {
-                    var listViewItem = tabsListView.ContainerFromIndex(i) as ListViewItem;
-                    listViewItem.Width = itemWidth;
                     SetTextColorBrushForTab(i, InactiveTabTextColorBrush);
-                }
 
                 itemsCount = tabsListView.Items.Count;
 

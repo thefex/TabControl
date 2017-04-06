@@ -39,6 +39,7 @@ namespace TabControl.Sample
             //};
 
             var tabItems = Enumerable.Range(1, 50).Select(x => "Tab number " + x).ToList();
+            tabItems[0] = "QWOEQWRO QKWOR KQOEK OQWek OQEK OQKWEQKOWEQew";
             SecondaryTabLayoutFlipView.TabItemsSource = tabItems;
 
             SecondaryTabLayoutFlipView.ItemsSource = tabItems.Select(x => new TabContent()
