@@ -15,7 +15,7 @@
 
 
     <Grid>
-        <tabControl:TabIndicatorLayoutFlipView x:Name="TabLayoutFlipView" Margin="15 15 0 0">
+        <!--<tabControl:TabIndicatorLayoutFlipView x:Name="TabLayoutFlipView" Margin="15 15 0 0">
             <tabControl:TabIndicatorLayoutFlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -24,7 +24,7 @@
                     </Grid>
                 </DataTemplate>
             </tabControl:TabIndicatorLayoutFlipView.ItemTemplate>
-        </tabControl:TabIndicatorLayoutFlipView>
+        </tabControl:TabIndicatorLayoutFlipView>-->
 
         <!--<tabControl:TabLayoutFlipView x:Name="SecondaryTabLayoutFlipView"
                                       Grid.Row="1" Margin="0 10 0 0">
@@ -38,6 +38,18 @@
             </tabControl:TabLayoutFlipView.ItemTemplate>
         </tabControl:TabLayoutFlipView>-->
 
+        <tabControl:TabLayoutFlipView x:Name="SecondaryTabLayoutFlipView"
+                                      Grid.Row="1" Margin="0 10 0 0">
+            <tabControl:TabLayoutFlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <TextBlock Text="{Binding Content}" Style="{StaticResource BodyTextBlockStyle}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </tabControl:TabLayoutFlipView.ItemTemplate>
+        </tabControl:TabLayoutFlipView>
     
     </Grid>
 </Page>
+

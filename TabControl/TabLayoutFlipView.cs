@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,56 +9,48 @@ using Windows.UI.Xaml.Media;
 
 namespace TabControl
 {
-    public sealed class TabLayoutFlipView : FlipView
+    public class TabLayoutFlipView : FlipView
     {
+        public static readonly DependencyProperty SelectedTabTextColorBrushProperty = DependencyProperty.Register(
+            "SelectedTabTextColorBrush", typeof(Brush), typeof(TabLayoutFlipView),
+            new PropertyMetadata(new SolidColorBrush(Colors.DeepPink)));
+
+        public static readonly DependencyProperty InactiveTabTextColorBrushProperty = DependencyProperty.Register(
+            "InactiveTabTextColorBrush", typeof(Brush), typeof(TabLayoutFlipView),
+            new PropertyMetadata(new SolidColorBrush(Colors.DarkGray)));
+
         public static readonly DependencyProperty TabItemsSourceProperty = DependencyProperty.Register(
             "TabItemsSource", typeof(IEnumerable), typeof(TabLayoutFlipView),
-            new PropertyMetadata(default(IEnumerable), (e, a) =>
-            {
-                var control = e as TabLayoutFlipView;
+            new PropertyMetadata(default(IEnumerable)));
 
-                if (control.tabsListView != null)
-                {
-                    control.tabsListView.ItemsSource = a.NewValue;
-                }
-            }));
+        private readonly List<ListViewItem> listViewItems = new List<ListViewItem>();
 
-
-
-        public DataTemplate TabTemplate
-        {
-            get { return (DataTemplate)GetValue(TabTemplateProperty); }
-            set { SetValue(TabTemplateProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for TabTemplate.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TabTemplateProperty =
-            DependencyProperty.Register("TabTemplate", typeof(DataTemplate), typeof(TabLayoutFlipView), new PropertyMetadata(default(DataTemplate)));
-
-
-
-        public DataTemplateSelector TabTemplateSelector
-        {
-            get { return (DataTemplateSelector)GetValue(TabTemplateSelectorProperty); }
-            set { SetValue(TabTemplateSelectorProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for TabTemplateSelector.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty TabTemplateSelectorProperty =
-            DependencyProperty.Register("TabTemplateSelector", typeof(DataTemplateSelector), typeof(TabLayoutFlipView), new PropertyMetadata(default(DataTemplateSelector)));
 
         private bool hasLayoutScrollViewerInitialized;
         private int itemsCount;
+
+        private double itemWidth;
         private ScrollViewer layoutScrollViewer;
-        private int selectedIndex = -1;
-        private int previouslySelectedIndex = -1;
+
+        private int selectedIndex;
         private ListView tabsListView;
 
         public TabLayoutFlipView()
         {
             DefaultStyleKey = typeof(TabLayoutFlipView);
         }
- 
+
+        public Brush SelectedTabTextColorBrush
+        {
+            get { return (Brush)GetValue(SelectedTabTextColorBrushProperty); }
+            set { SetValue(SelectedTabTextColorBrushProperty, value); }
+        }
+
+        public Brush InactiveTabTextColorBrush
+        {
+            get { return (Brush)GetValue(InactiveTabTextColorBrushProperty); }
+            set { SetValue(InactiveTabTextColorBrushProperty, value); }
+        }
 
         public IEnumerable TabItemsSource
         {
@@ -72,51 +64,48 @@ namespace TabControl
 
             layoutScrollViewer = GetTemplateChild("ScrollingHost") as ScrollViewer;
             tabsListView = GetTemplateChild("TabListView") as ListView;
+
             tabsListView.ItemsSource = TabItemsSource;
-            tabsListView.ContainerContentChanging += TabsListView_ContainerContentChanging;
-
-            if (TabTemplateSelector != null)
-                tabsListView.ItemTemplateSelector = TabTemplateSelector;
-            else
-                tabsListView.ItemTemplate = TabTemplate;
-
             tabsListView.ItemClick += TabsListViewOnItemClick;
             tabsListView.IsItemClickEnabled = true;
             tabsListView.SelectionMode = ListViewSelectionMode.None;
+
             layoutScrollViewer.ViewChanging += LayoutScrollViewerOnViewChanging;
             layoutScrollViewer.ViewChanged += LayoutScrollViewerOnViewChanged;
         }
 
-        private void TabsListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            OnTabContentChanging();
-        }
-
         private async void TabsListViewOnItemClick(object sender, ItemClickEventArgs itemClickEventArgs)
         {
-            var container = tabsListView.ContainerFromItem(itemClickEventArgs.ClickedItem);
-            if (container == null)
+            var listViewSelectedIndex = listViewItems.FindIndex(x => x.Content.Equals(itemClickEventArgs.ClickedItem));
+
+            if (listViewSelectedIndex == -1)
                 return;
 
-            var selectedIndex = tabsListView.IndexFromContainer(container);
+            await ScrollToIndex(listViewSelectedIndex);
+        }
 
-            if (selectedIndex == -1)
-                return;
+        public async Task ScrollToIndex(int indexToScrollIn)
+        {
+            var pageDistance = Math.Abs(indexToScrollIn - SelectedIndex);
+            var isPageFarAwayAndNotTooFar = pageDistance > 1 && pageDistance <= 4;
 
-            var isPageFarAway = Math.Abs(selectedIndex - SelectedIndex) > 1;
+            if (indexToScrollIn < listViewItems.Count && indexToScrollIn >= 0)
+            tabsListView.ScrollIntoView(listViewItems[indexToScrollIn].DataContext, ScrollIntoViewAlignment.Default);
 
-            if (!isPageFarAway)
+            if (!isPageFarAwayAndNotTooFar)
             {
-                SelectedIndex = selectedIndex;
+                SetTextColorBrushForTab(SelectedIndex, InactiveTabTextColorBrush);
+                SelectedIndex = indexToScrollIn;
+                SetTextColorBrushForTab(SelectedIndex, SelectedTabTextColorBrush);
                 return;
             }
 
-            while (SelectedIndex != selectedIndex)
+            while (SelectedIndex != indexToScrollIn)
             {
-                SelectedIndex += (SelectedIndex > selectedIndex) ? -1 : 1;
+                SelectedIndex += (SelectedIndex > indexToScrollIn) ? -1 : 1;
 
-                if (SelectedIndex != selectedIndex)
-                    await Task.Delay(15);
+                if (SelectedIndex != indexToScrollIn)
+                    await Task.Delay(10);
             }
         }
 
@@ -125,14 +114,37 @@ namespace TabControl
         {
             if (!hasLayoutScrollViewerInitialized)
             {
+                for (var i = 0; i < tabsListView.Items.Count; ++i)
+                {
+                    var listViewItem = tabsListView.ContainerFromIndex(i) as ListViewItem;
+                    listViewItem.InvalidateMeasure();
+                    itemWidth = Math.Max(itemWidth, listViewItem.DesiredSize.Width);
+                    listViewItems.Add(listViewItem);
+                    listViewItem.Loaded += ListViewItemOnLoaded;
+                }
+
+                for (var i = 0; i < tabsListView.Items.Count; ++i)
+                {
+                    var listViewItem = tabsListView.ContainerFromIndex(i) as ListViewItem;
+                    listViewItem.Width = itemWidth;
+                    SetTextColorBrushForTab(i, InactiveTabTextColorBrush);
+                }
+
                 itemsCount = tabsListView.Items.Count;
 
                 SetupIndicatorForOffset(SelectedIndex);
                 hasLayoutScrollViewerInitialized = true;
                 layoutScrollViewer.ViewChanged -= LayoutScrollViewerOnViewChanged;
-                
             }
         }
+
+        private void ListViewItemOnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var listViewItem = sender as ListViewItem;
+            var brushToSet = listViewItem == listViewItems[SelectedIndex] ? SelectedTabTextColorBrush : InactiveTabTextColorBrush;
+            (listViewItem.ContentTemplateRoot as TextBlock).Foreground = brushToSet;
+        }
+
 
         private void LayoutScrollViewerOnViewChanging(object sender,
             ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
@@ -150,10 +162,10 @@ namespace TabControl
             var pageIndex = (int)(horizontalOffset);
             var fractionalPart = horizontalOffset - pageIndex;
 
-            NotifyAboutTabSelectionChanged(pageIndex, fractionalPart);
+            AdjustTextColor(pageIndex, fractionalPart);
         }
 
-        private void NotifyAboutTabSelectionChanged(int pageIndex, double fractionalPart)
+        private void AdjustTextColor(int pageIndex, double fractionalPart)
         {
             var pageIndexToBeSelected = fractionalPart >= 0.5 ? pageIndex + 1 : pageIndex;
 
@@ -163,51 +175,24 @@ namespace TabControl
             if (pageIndexToBeSelected == selectedIndex)
                 return;
 
-            previouslySelectedIndex = selectedIndex;
             selectedIndex = pageIndexToBeSelected;
-            var tabSelectionChangedEventArgs = new TabSelectionChangedEventArgs()
-            {
-                NewSelectionIndex = selectedIndex,
-                NewSelectionListViewItem = tabsListView.ContainerFromIndex(selectedIndex) as ListViewItem
-            };
+            var actualPageBrush = fractionalPart >= 0.5 ? InactiveTabTextColorBrush : SelectedTabTextColorBrush;
+            var nextPageBrush = fractionalPart >= 0.5 ? SelectedTabTextColorBrush : InactiveTabTextColorBrush;
 
-            if (previouslySelectedIndex != -1)
-            {
-                tabSelectionChangedEventArgs.OldSelectionIndex = previouslySelectedIndex;
-                tabSelectionChangedEventArgs.OldSelectionListViewItem =
-                    tabsListView.ContainerFromIndex(previouslySelectedIndex) as ListViewItem;
-            }
-
-            OnTabSelectionIndexChanged(tabSelectionChangedEventArgs);
+            SetTextColorBrushForTab(pageIndex, actualPageBrush);
+            SetTextColorBrushForTab(pageIndex + 1, nextPageBrush);
         }
-         
 
-        public event Action<TabSelectionChangedEventArgs> TabSelectionIndexChanged;
-        public event Action TabContentChanging;
-
-        private void OnTabSelectionIndexChanged(TabSelectionChangedEventArgs obj)
+        private void SetTextColorBrushForTab(int tabIndex, Brush colorBrush)
         {
-            TabSelectionIndexChanged?.Invoke(obj);
+            if (tabIndex >= itemsCount)
+                return;
+
+            var listViewItem = listViewItems[tabIndex];
+            var contentTemplateRoot = listViewItem.ContentTemplateRoot as TextBlock;
+
+            if (contentTemplateRoot != null)
+                contentTemplateRoot.Foreground = colorBrush;
         }
-
-        public ListViewItem GetTabItem(int fromIndex)
-        {
-            return tabsListView.ContainerFromIndex(fromIndex) as ListViewItem;
-        }
-
-        private void OnTabContentChanging()
-        {
-            TabContentChanging?.Invoke();
-        }
-    }
-
-    public class TabSelectionChangedEventArgs
-    {
-        public int? OldSelectionIndex { get; internal set; }
-        public int NewSelectionIndex { get; internal set; }
-
-        public ListViewItem OldSelectionListViewItem { get; internal set; }
-
-        public ListViewItem NewSelectionListViewItem { get; internal set; }
     }
 }

@@ -29,23 +29,22 @@ namespace TabControl.Sample
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
 
-            TabLayoutFlipView.TabItemsSource = new List<string> {"ANDROID", "TABLAYOUT", "PORT"};
+            //TabLayoutFlipView.TabItemsSource = new List<string> {"ANDROID", "TABLAYOUT", "PORT"};
 
-            TabLayoutFlipView.ItemsSource = new List<TabContent>()
-            {
-                new TabContent() { Content = "This is first tab of TabIndiciatorLayoutFlipView"},
-                new TabContent() { Content = "That's a place where settings live."},
-                new TabContent() { Content = "About application page"}
-            };
-
-            //SecondaryTabLayoutFlipView.TabItemsSource = new List<string> { "FIRST", "SETTINGS", "ABOUT" };
-
-            //SecondaryTabLayoutFlipView.ItemsSource = new List<TabContent>()
+            //TabLayoutFlipView.ItemsSource = new List<TabContent>()
             //{
-            //    new TabContent() { Content = "This is first tab of TabLayoutFlipView"},
+            //    new TabContent() { Content = "This is first tab of TabIndiciatorLayoutFlipView"},
             //    new TabContent() { Content = "That's a place where settings live."},
             //    new TabContent() { Content = "About application page"}
             //};
+
+            var tabItems = Enumerable.Range(1, 50).Select(x => "Tab number " + x).ToList();
+            SecondaryTabLayoutFlipView.TabItemsSource = tabItems;
+
+            SecondaryTabLayoutFlipView.ItemsSource = tabItems.Select(x => new TabContent()
+            {
+                Content = "This is content of tab: " + x
+            });
         }
 
         class TabContent
